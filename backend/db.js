@@ -1,12 +1,14 @@
+// backend/db.js - PUDHU CODE for Deployment
 require('dotenv').config();
 const { Pool } = require('pg');
 
+// Render-la irundhu vara DATABASE_URL-a eduthukum
+const connectionString = process.env.DATABASE_URL;
+
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  connectionString: connectionString,
+  // Render-ku idhu thevai
+  ssl: connectionString ? { rejectUnauthorized: false } : false
 });
 
-module.exports = pool;
+module. ઉexports = pool;
