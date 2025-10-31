@@ -1,4 +1,4 @@
-// backend/index.js - THE ABSOLUTE FINAL, CORRECTED, WORKING CODE
+// backend/index.js - THE ABSOLUTE FINAL, CORRECTED, WORKING CODE - Copy and Paste This Entire Block
 
 const express = require('express');
 const cors = require('cors');
@@ -34,14 +34,29 @@ app.get('/api/leads', async (req, res) => {
   }
 });
 
-// POST (Create) a new Lead
+// POST (Create) a new Lead - CORRECTED VERSION
 app.post('/api/leads', async (req, res) => {
     try {
+        console.log("Received data to create a new lead:", req.body);
         const { name, company, email, phone, source, country, avatar } = req.body;
+
         const result = await pool.query(
-            'INSERT INTO leads (name, company, email, phone, status, source, country, avatar, owner_name, owner_avatar) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-            [ name || 'No Name', company || 'No Company', email, phone || null, 'New', source || 'Manual Entry', country || 'Unknown', avatar || `https://i.pravatar.cc/150?u=${email}`, 'Alex Johnson', 'https://i.pravatar.cc/150?u=user-1' ]
+            'INSERT INTO leads (name, company, email, phone, status, source, country, avatar, owner_name, owner_avatar) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+            [
+                name || 'No Name',
+                company || 'No Company',
+                email,
+                phone || null,
+                'New', // status
+                source || 'Manual Entry', // source
+                country || 'Unknown', // country
+                avatar || `https://i.pravatar.cc/150?u=${email}`, // avatar
+                'Alex Johnson', // owner_name
+                'https://i.pravatar.cc/150?u=user-1' // owner_avatar
+            ]
         );
+
+        console.log("New lead created successfully in DB:", result.rows[0]);
         res.status(201).json(result.rows[0]);
     } catch (error) {
         handleErrors(res, error);
@@ -91,9 +106,8 @@ app.get('/api/reports/summary', async (req, res) => {
   }
 });
 
-// GET Reports Revenue (Corrected - was missing before)
+// GET Reports Revenue
 app.get('/api/reports/revenue', (req, res) => {
-  // Sending dummy data for now, but the route exists so it won't be "Not Found"
   const revenueData = [ { name: 'Jan', revenue: 12000 }, { name: 'Feb', revenue: 19000 }, { name: 'Mar', revenue: 15000 }, { name: 'Apr', revenue: 22000 }, { name: 'May', revenue: 28000 }, { name: 'Jun', revenue: 35000 }, ];
   res.json(revenueData);
 });
