@@ -10,7 +10,7 @@ import {
 
 // --- Namma Backend Server Address ---
 // Deployment-ku munnadi idha unga Render URL-ku maathanum
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'https://teamdesk-backend-nirmal.onrender.com/api';
 
 // --- MOCK API LATENCY (Dummy Data-kku mattum) ---
 const LATENCY = 500;
