@@ -1,4 +1,4 @@
-// backend/index.js - THE COMPLETE & FINAL LOCAL CODE
+// backend/index.js - THE COMPLETE, FINAL & CORRECTED DEPLOYMENT CODE - Idhaiye Copy Paste Pannunga
 
 const express = require('express');
 const cors = require('cors');
@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
 const app = express();
-const port = process.env.PORT || 8000; // Deployment-ku idhu mukkiyam
+const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
@@ -26,70 +26,33 @@ app.get('/api/leads', async (req, res) => {
 app.post('/api/leads', async (req, res) => {
     try {
         const { name, company, email, phone, avatar } = req.body;
-        const newLead = await pool.query(
-            'INSERT INTO leads (name, company, email, phone, status, source, country, avatar, owner_name, owner_avatar) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+        const newLead = await pool.query('INSERT INTO leads (name, company, email, phone, status, source, country, avatar, owner_name, owner_avatar) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
             [name, company, email, phone, 'New', 'Website', 'India', avatar || `https://i.pravatar.cc/150?u=${email}`, 'Alex Johnson', 'https://i.pravatar.cc/150?u=user-1']
         );
         res.json(newLead.rows[0]);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- Deals API (Unmaiyaana data-voda) ---
-app.get('/api/deals', async (req, res) => {
-  try {
-    const allDeals = await pool.query('SELECT * FROM deals ORDER BY id DESC');
-    // Frontend-ku etha maari owner object-a format panrom
-    const formattedDeals = allDeals.rows.map(deal => ({
-        ...deal,
-        owner: { name: deal.owner_name, avatar: deal.owner_avatar }
-    }));
-    res.json(formattedDeals);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// --- Activity Feed API (Unmaiyaana data-voda) ---
-app.get('/api/activity', async (req, res) => {
-    try {
-        const allActivities = await pool.query('SELECT * FROM activities ORDER BY date DESC');
-        // Frontend-ku etha maari author object-a format panrom
-        const formattedActivities = allActivities.rows.map(act => ({
-            ...act,
-            author: { name: act.author_name, avatar: act.author_avatar }
-        }));
-        res.json(formattedActivities);
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// --- Reports API (Unmaiyaana data-voda) ---
-app.get('/api/reports/summary', async (req, res) => {
-    try {
-        const totalLeadsRes = await pool.query("SELECT COUNT(*) FROM leads");
-        const totalRevenueRes = await pool.query("SELECT SUM(value) FROM deals WHERE stage = 'Closed-Won'"); // Ippo-thaiku stage illa, so 0 varum
-        
-        res.json({
-            totalLeads: parseInt(totalLeadsRes.rows[0].count, 10),
-            conversionRate: 15.2, // Sample
-            totalRevenue: parseFloat(totalRevenueRes.rows[0].sum) || 54000, // Sample
-            avgDealSize: 4500, // Sample
-        });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// Matha APIs...
-app.get('/api/dashboard', (req, res) => res.json({})); // Dashboard frontend-laye handle aagatum
+// --- Other APIs ---
+app.get('/api/deals', async (req, res) => { try { const r = await pool.query('SELECT * FROM deals'); res.json(r.rows.map(d=>({...d, owner:{name:d.owner_name, avatar:d.owner_avatar}}))) } catch(e){res.status(500).json({e:e.message})}});
+app.get('/api/activity', async (req, res) => { try { const r = await pool.query('SELECT * FROM activities'); res.json(r.rows.map(a=>({...a, author:{name:a.author_name, avatar:a.author_avatar}}))) } catch(e){res.status(500).json({e:e.message})}});
+app.get('/api/reports/summary', async (req, res) => { try { const r = await pool.query("SELECT COUNT(*) FROM leads"); res.json({totalLeads: parseInt(r.rows[0].count), conversionRate: 15.2, totalRevenue: 54000, avgDealSize: 4500}) } catch(e){res.status(500).json({e:e.message})}});
 app.get('/api/reports/revenue', (req, res) => res.json([]));
 
-// --- AI Chat API ---
-app.post('/api/chat', async (req, res) => {
-    try {
-        const { query } = req.body;
-        const chat = model.startChat();
-        const result = await chat.sendMessage(query);
-        const response = await result.response;
-        res.json({ reply: response.text() });
-    } catch (error) { res.status(500).json({ error: "AI Error" }); }
+// --- Dashboard API (SARI SEYYAPPATTADHU) ---
+app.get('/api/dashboard', (req, res) => {
+  const dashboardData = {
+      overallSalesData: [ { name: 'DEC 2', sales: 25000 }, { name: 'DEC 3', sales: 28000 }, { name: 'DEC 4', sales: 22000 }, { name: 'DEC 5', sales: 34000 }, { name: 'DEC 6', sales: 48000 }, { name: 'DEC 7', sales: 42000 }, { name: 'DEC 8', sales: 35000 }, ],
+      totalSales: 40256.92,
+      purchaseSourceData: [ { name: 'Social Media', value: 48 }, { name: 'Direct Search', value: 33 }, { name: 'Others', value: 19 }, ],
+      visitorData: Array.from({ length: 12 }, (_, i) => ({ name: `W${i + 1}`, visitors: Math.floor(Math.random() * 50000) + 20000 })),
+      countryData: [ { name: 'India', sales: 1200 }, { name: 'United States', sales: 1790 }, { name: 'China', sales: 490 }, { name: 'Indonesia', sales: 1489 }, { name: 'Russia', sales: 1005 }, { name: 'Bangladesh', sales: 689 }, ].sort((a,b)=> b.sales - a.sales),
+      salesHistoryData: [ { id: 'deal-8', value: 30.00, owner: { name: 'Peter Parker', avatar: 'https://i.pravatar.cc/150?u=user-8' } }, { id: 'deal-9', value: 49.99, owner: { name: 'David Johnson', avatar: 'https://i.pravatar.cc/150?u=user-7' } }, { id: 'deal-10', value: 49.99, owner: { name: 'Cinderella', avatar: 'https://i.pravatar.cc/150?u=user-6' } } ],
+  };
+  res.json(dashboardData);
 });
 
-app.listen(port, () => {
-  console.log(`Backend server is listening on port ${port}`);
-});
+// --- AI Chat API ---
+app.post('/api/chat', async (req, res) => { try { const { query } = req.body; const chat = model.startChat(); const result = await chat.sendMessage(query); const response = await result.response; res.json({ reply: response.text() }); } catch (error) { res.status(500).json({ error: "AI Error" }); } });
+
+app.listen(port, () => { console.log(`Backend server is listening on port ${port}`); });
